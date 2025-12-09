@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HWID Utility - 专业的硬件ID查看和修改工具">
+    <title>HWID Utility - 硬件ID修改工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
+            --secondary-color: #06B6D4;
+            --bg-color: #F9FAFB;
+            --card-bg: #FFFFFF;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --border-color: #E5E7EB;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Navigation */
+        nav {
+            background: var(--card-bg);
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 2rem;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .nav-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-link {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h3 {
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Steps */
+        .steps {
+            counter-reset: step;
+        }
+
+        .step {
+            position: relative;
+            padding-left: 4rem;
+            margin-bottom: 2rem;
+            counter-increment: step;
+        }
+
+        .step::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .step h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .step p {
+            color: var(--text-secondary);
+        }
+
+        /* Code Block */
+        pre {
+            background: #1F2937;
+            color: #F3F4F6;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            border: 2px solid #374151;
+            position: relative;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background: #FEF3C7;
+            border-left: 4px solid var(--warning);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box strong {
+            color: var(--warning);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box {
+            background: #DBEAFE;
+            border-left: 4px solid var(--secondary-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        /* Download Button */
+        .download-section {
+            text-align: center;
+            margin: 3rem 0;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .download-btn:active {
+            transform: translateY(-2px);
+        }
+
+        /* Requirements List */
+        .requirements {
+            list-style: none;
+        }
+
+        .requirements li {
+            padding: 0.8rem 0;
+            padding-left: 2rem;
+            position: relative;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .requirements li:last-child {
+            border-bottom: none;
+        }
+
+        .requirements li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-primary);
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-top: 4rem;
+        }
+
+        footer a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        footer a:hover {
+            opacity: 0.8;
+        }
+
+        /* Accordion */
+        .accordion {
+            margin: 1rem 0;
+        }
+
+        .accordion-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            background: var(--bg-color);
+            padding: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .accordion-header:hover {
+            background: #F3F4F6;
+        }
+
+        .accordion-header.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .accordion-icon {
+            transition: transform 0.3s;
+        }
+
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: white;
+        }
+
+        .accordion-content.active {
+            max-height: 1000px;
+        }
+
+        .accordion-body {
+            padding: 1.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .step {
+                padding-left: 3rem;
+            }
+
+            .step::before {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+
+            .download-btn {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-on-scroll {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <h1>🔧 HWID Utility</h1>
+            <p class="subtitle">硬件ID查看与修改工具 | Hardware ID Modifier</p>
+            <div style="margin-top: 1rem;">
+                <span class="version-badge">v1.0</span>
+                <span class="version-badge" style="background: rgba(16, 185, 129, 0.3);">✨ 永久免费 Free Forever</span>
+                <span class="version-badge" style="background: rgba(251, 191, 36, 0.3);">🎓 学习参考 Educational</span>
+            </div>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">作者 Author: <strong>DaZuiZui</strong></p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-content">
+            <a href="#features" class="nav-link">功能特性</a>
+            <a href="#download" class="nav-link">立即下载</a>
+            <a href="#usage" class="nav-link">使用指南</a>
+            <a href="#build" class="nav-link">编译方法</a>
+            <a href="#requirements" class="nav-link">系统要求</a>
+            <a href="#faq" class="nav-link">常见问题</a>
+        </div>
+    </nav>
+
+    <!-- Container -->
+    <div class="container">
+        <!-- Introduction -->
+        <div class="card animate-on-scroll">
+            <h2>💡 关于软件 | About</h2>
+            <p>HWID Utility 是一款<strong>永久免费</strong>的 Windows 硬件ID查看和修改工具，由 <strong>DaZuiZui</strong> 使用 C++ 开发。本工具支持查看 CPU ID、磁盘序列号、MAC 地址等硬件信息，并提供自定义 HWID 设置功能。程序界面友好，支持中英文双语显示。</p>
+            <div class="info-box" style="margin-top: 1rem;">
+                <strong>📚 学习参考工具 | Educational Tool</strong><br>
+                本工具专为技术学习和研究设计，帮助开发者理解 Windows 硬件标识机制、注册表操作和系统API使用。仅供学习参考，请勿用于违反法律法规或第三方服务条款的用途。
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div id="features" class="card animate-on-scroll">
+            <h2>✨ 功能特性 | Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <div class="feature-title">硬件信息查看</div>
+                    <p class="feature-desc">实时查看 CPU ID、磁盘序列号和 MAC 地址等硬件标识</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎲</div>
+                    <div class="feature-title">随机生成 HWID</div>
+                    <p class="feature-desc">一键生成随机硬件ID，支持自定义格式</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✏️</div>
+                    <div class="feature-title">手动设置 HWID</div>
+                    <p class="feature-desc">支持手动输入自定义硬件ID值</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">对比修改效果</div>
+                    <p class="feature-desc">清晰展示修改前后的硬件信息对比</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <div class="feature-title">双语界面</div>
+                    <p class="feature-desc">完整的中英文双语显示支持</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <div class="feature-title">权限检测</div>
+                    <p class="feature-desc">自动检测管理员权限，确保安全操作</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download -->
+        <div id="download" class="download-section">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">📥 立即下载 | Download</h2>
+            <a href="https://github.com/DaZuiZui/HWID-Utility/releases" class="download-btn" target="_blank">
+                <span>⬇️</span>
+                <span>下载最新版本 | Download Latest</span>
+            </a>
+            <p style="margin-top: 1rem; color: var(--text-secondary);">或从 <a href="https://github.com/DaZuiZui/HWID-Utility" style="color: var(--primary-color); text-decoration: none;">GitHub 仓库</a> 获取源代码</p>
+        </div>
+
+        <!-- Usage Guide -->
+        <div id="usage" class="card animate-on-scroll">
+            <h2>📖 使用指南 | Usage Guide</h2>
+            
+            <div class="steps">
+                <div class="step">
+                    <h4>以管理员身份运行 | Run as Administrator</h4>
+                    <p>右键点击 <code>hwid_modifier.exe</code>，选择"以管理员身份运行"。这是必需的，因为程序需要访问系统注册表。</p>
+                </div>
+                
+                <div class="step">
+                    <h4>查看当前硬件信息 | View Current Hardware Info</h4>
+                    <p>程序启动时会自动显示当前的 CPU ID、磁盘序列号和 MAC 地址。这些信息代表您的硬件唯一标识。</p>
+                </div>
+                
+                <div class="step">
+                    <h4>选择操作方式 | Select Operation</h4>
+                    <p>程序提供三种操作选项：</p>
+                    <ul style="margin-top: 0.5rem; padding-left: 1.5rem; color: var(--text-secondary);">
+                        <li>选项 1: 自动生成并设置随机 HWID</li>
+                        <li>选项 2: 手动输入自定义 HWID</li>
+                        <li>选项 3: 查看当前 HWID 状态</li>
+                    </ul>
+                </div>
+                
+                <div class="step">
+                    <h4>查看修改效果 | View Modification Results</h4>
+                    <p>修改完成后，程序会显示修改前后的对比信息，让您清楚了解变化情况。</p>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ 重要提示 | Important Notice</strong>
+                本工具仅用于学习和测试目的。修改硬件信息可能违反某些软件的使用条款，请确保在法律允许的范围内使用。某些硬件信息是只读的，无法直接修改。
+            </div>
+        </div>
+
+        <!-- Build Instructions -->
+        <div id="build" class="card animate-on-scroll">
+            <h2>🔨 编译方法 | Build Instructions</h2>
+            
+            <div class="accordion">
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span><strong>方法 1: 使用 Visual Studio</strong></span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <ol style="padding-left: 1.5rem;">
+                                <li>打开 Visual Studio 2019 或 2022</li>
+                                <li>选择 "打开本地文件夹"</li>
+                                <li>选择 HWID-Utility 项目文件夹</li>
+                                <li>Visual Studio 会自动识别 CMakeLists.txt</li>
+                                <li>点击 "生成" → "全部生成"</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span><strong>方法 2: 使用命令行和 CMake</strong></span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <pre><code>mkdir build
+cd build
+cmake ..
+cmake --build . --config Release</code><button class="copy-btn" onclick="copyCode(this)">复制</button></pre>
+                            <p style="margin-top: 1rem;">编译完成后，可执行文件位于 <code>build/Release/hwid_modifier.exe</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span><strong>方法 3: 使用批处理脚本（最简单）</strong></span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            <p>双击运行项目中的 <code>build.bat</code> 文件，脚本会自动完成所有编译步骤。</p>
+                            <div class="info-box" style="margin-top: 1rem;">
+                                <strong>💡 提示:</strong> 这是最简单的编译方法，脚本会自动检测并使用合适的编译器。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Requirements -->
+        <div id="requirements" class="card animate-on-scroll">
+            <h2>💻 系统要求 | System Requirements</h2>
+            <ul class="requirements">
+                <li><strong>操作系统:</strong> Windows 7 或更高版本（推荐 Windows 10/11）</li>
+                <li><strong>权限:</strong> 管理员权限（用于修改注册表）</li>
+                <li><strong>编译器:</strong> Visual Studio 2017+ 或 MinGW（仅编译时需要）</li>
+                <li><strong>C++ 标准:</strong> C++17 或更高版本</li>
+                <li><strong>依赖库:</strong> Windows API (iphlpapi.lib, advapi32.lib)</li>
+            </ul>
+        </div>
+
+        <!-- FAQ -->
+        <div id="faq" class="card animate-on-scroll">
+            <h2>❓ 常见问题 | FAQ</h2>
+            
+            <div class="accordion">
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>为什么需要管理员权限？</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            程序需要访问和修改 Windows 注册表中的系统信息，这需要管理员权限。如果没有管理员权限，程序仍可运行并查看硬件信息，但无法修改 HWID。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>修改 HWID 是否永久生效？</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            本程序修改的是注册表中的自定义 HWID 值，而不是硬件本身的标识。真实的 CPU ID、磁盘序列号等硬件信息是只读的，无法被软件修改。自定义 HWID 会保存在注册表中直到被手动删除或修改。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>程序安全吗？</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            程序是开源的，您可以在 GitHub 上查看完整源代码。程序仅修改 <code>HKLM\SOFTWARE\HWID_Utility</code> 注册表项，不会影响系统关键配置。所有操作都有完善的错误处理机制。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>支持哪些操作系统？</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            程序支持 Windows 7 及以上版本的 Windows 操作系统。在 Windows 10 和 Windows 11 上测试效果最佳。不支持 macOS 和 Linux 系统。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <div class="accordion-header" onclick="toggleAccordion(this)">
+                        <span>如何卸载或恢复？</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-body">
+                            要完全移除程序的影响，只需删除注册表项 <code>HKLM\SOFTWARE\HWID_Utility</code>。您可以使用 Windows 的注册表编辑器（regedit）手动删除，或在程序中设置为空值。真实的硬件信息不会受到影响。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Details -->
+        <div class="card animate-on-scroll">
+            <h2>🔧 技术说明 | Technical Details</h2>
+            
+            <h3>硬件信息获取方式</h3>
+            <ul style="padding-left: 1.5rem; color: var(--text-secondary);">
+                <li><strong>CPU ID:</strong> 使用 <code>__cpuid</code> 指令获取 CPU 唯一标识符</li>
+                <li><strong>磁盘序列号:</strong> 通过 Windows API <code>GetVolumeInformation</code> 获取 C 盘卷序列号</li>
+                <li><strong>MAC 地址:</strong> 使用 <code>GetAdaptersInfo</code> 获取第一个网卡的物理地址</li>
+                <li><strong>自定义 HWID:</strong> 存储在注册表路径 <code>HKLM\SOFTWARE\HWID_Utility\CustomHWID</code></li>
+            </ul>
+
+            <h3 style="margin-top: 2rem;">文件结构</h3>
+            <pre><code>HWID-Utility/
+├── hwid_modifier.cpp   # 主程序源代码
+├── CMakeLists.txt      # CMake 构建配置
+├── build.bat           # Windows 编译脚本
+├── index.html          # 项目介绍页面
+└── README.md           # 说明文档</code></pre>
+        </div>
+
+        <!-- License -->
+        <div class="card animate-on-scroll">
+            <h2>📄 许可证与使用声明 | License & Usage</h2>
+            <p><strong>作者:</strong> DaZuiZui | <strong>许可:</strong> MIT License 开源协议</p>
+            <p style="margin-top: 1rem;">本项目<strong>永久免费 (Free Forever)</strong>，您可以自由使用、修改和分发本软件，但需保留原始版权声明。</p>
+            
+            <div class="warning-box" style="margin-top: 1.5rem;">
+                <strong>🎓 重要声明 | Important Notice</strong>
+                本工具<strong>仅供学习和参考使用 (For Educational and Reference Purposes Only)</strong>。使用本工具进行任何操作前，请确保：
+                <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+                    <li>您已充分理解相关技术原理</li>
+                    <li>您的使用行为符合当地法律法规</li>
+                    <li>您不会将其用于任何非法或违反第三方服务条款的行为</li>
+                    <li>作者不对任何使用后果承担责任</li>
+                </ul>
+            </div>
+            
+            <div class="info-box" style="margin-top: 1rem;">
+                <strong>💡 贡献欢迎!</strong> 如果您发现 bug 或有改进建议，欢迎在 GitHub 上提交 Issue 或 Pull Request。
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 HWID Utility - by <a href="https://github.com/DaZuiZui" target="_blank">DaZuiZui</a></p>
+        <p style="margin-top: 0.5rem; opacity: 0.8;">🎓 本工具永久免费 (Free Forever) | 仅供学习参考使用</p>
+        <p style="margin-top: 0.3rem; opacity: 0.7; font-size: 0.9rem;">⚠️ For Educational and Reference Purposes Only | 请遵守相关法律法规</p>
+    </footer>
+
+    <script>
+        // Accordion Toggle
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const allHeaders = document.querySelectorAll('.accordion-header');
+            const allContents = document.querySelectorAll('.accordion-content');
+            
+            // Close all other accordions
+            allHeaders.forEach(h => {
+                if (h !== header) {
+                    h.classList.remove('active');
+                }
+            });
+            allContents.forEach(c => {
+                if (c !== content) {
+                    c.classList.remove('active');
+                }
+            });
+            
+            // Toggle current accordion
+            header.classList.toggle('active');
+            content.classList.toggle('active');
+        }
+
+        // Copy Code
+        function copyCode(button) {
+            const pre = button.parentElement;
+            const code = pre.querySelector('code');
+            const text = code.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '已复制!';
+                button.style.background = '#10B981';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = '';
+                }, 2000);
+            });
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Update active link
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card, .feature-card').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Active nav link on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('[id]');
+            const scrollY = window.pageYOffset;
+
+            sections.forEach(section => {
+                const sectionHeight = section.offsetHeight;
+                const sectionTop = section.offsetTop - 100;
+                const sectionId = section.getAttribute('id');
+                const navLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+
+                if (navLink && scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    navLink.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
